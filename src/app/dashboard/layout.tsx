@@ -6,7 +6,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore, useUIStore, useNotificationStore } from '@/store';
 import { signOut } from 'firebase/auth';
 import { auth } from '@/firebase/config';
-import { mockNotifications } from '@/lib/mock-data';
+import { subscribeToCollection, orderBy } from '@/firebase/firestore';
+import type { Notification } from '@/types';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -39,7 +40,7 @@ const navItems = [
   { href: '/dashboard/orders', label: 'Orders', icon: ShoppingCart, badge: '4' },
   { href: '/dashboard/tasks', label: 'Tasks', icon: ClipboardList, badge: '3' },
   { href: '/dashboard/reports', label: 'Reports', icon: BarChart3, badge: null },
-  { href: '/dashboard/notifications', label: 'Notifications', icon: Bell, badge: '3' },
+  { href: '/dashboard/notifications', label: 'Notifications', icon: Bell, badge: null },
   { href: '/dashboard/settings', label: 'Settings', icon: Settings, badge: null },
 ];
 
@@ -53,7 +54,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [isOnline, setIsOnline] = useState(true);
 
   useEffect(() => {
-    setNotifications(mockNotifications);
+    const unsubscribe = subscribeToCollection<Notification>(
+      'notifications',
+      (data) => {
+        setNotifications(data);
+      },
+      orderBy('createdAt', 'desc')
+    );
+    return () => unsubscribe();
   }, [setNotifications]);
 
   useEffect(() => {
@@ -146,10 +154,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     </motion.span>
                   )}
                 </AnimatePresence>
-                {!collapsed && item.badge && (
-                  <Badge className="h-5 min-w-5 flex items-center justify-center text-[10px] bg-destructive text-white border-0">
-                    {item.badge}
-                  </Badge>
+                {!collapsed && (
+                  item.href === '/dashboard/notifications' ? (
+                    unreadCount > 0 && (
+                      <Badge className="h-5 min-w-5 flex items-center justify-center text-[10px] bg-destructive text-white border-0">
+                        {unreadCount}
+                      </Badge>
+                    )
+                  ) : item.badge && (
+                    <Badge className="h-5 min-w-5 flex items-center justify-center text-[10px] bg-destructive text-white border-0">
+                      {item.badge}
+                    </Badge>
+                  )
                 )}
               </button>
             );

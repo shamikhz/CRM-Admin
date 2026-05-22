@@ -85,9 +85,9 @@ export default function OrdersPage() {
     });
   }, [orders, searchQuery, paymentFilter, deliveryFilter]);
 
-  const totalRevenue = orders.reduce((s, o) => s + o.totalAmount, 0);
-  const paidOrders = orders.filter(o => o.paymentStatus === 'paid').length;
-  const pendingOrders = orders.filter(o => o.paymentStatus === 'pending' || o.paymentStatus === 'partial').length;
+  const totalRevenue = filtered.reduce((s, o) => s + (o.totalAmount || 0), 0);
+  const paidOrders = filtered.filter(o => o.paymentStatus?.toLowerCase() === 'paid').length;
+  const pendingOrders = filtered.filter(o => o.paymentStatus?.toLowerCase() === 'pending' || o.paymentStatus?.toLowerCase() === 'partial').length;
 
   const handleDelete = async (orderId: string) => {
     try {
@@ -132,7 +132,7 @@ export default function OrdersPage() {
       {/* Stats */}
       <motion.div variants={itemVariants} className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
-          { label: 'Total Orders', value: orders.length, icon: ShoppingCart, color: 'text-violet-600 bg-violet-50' },
+          { label: 'Total Orders', value: filtered.length, icon: ShoppingCart, color: 'text-violet-600 bg-violet-50' },
           { label: 'Total Revenue', value: `₹${(totalRevenue / 1000).toFixed(0)}K`, icon: IndianRupee, color: 'text-emerald-600 bg-emerald-50' },
           { label: 'Paid Orders', value: paidOrders, icon: CheckCircle2, color: 'text-blue-600 bg-blue-50' },
           { label: 'Pending', value: pendingOrders, icon: Clock, color: 'text-amber-600 bg-amber-50' },
@@ -222,7 +222,7 @@ export default function OrdersPage() {
                       </TableCell>
                       <TableCell className="text-sm font-medium">{order.customerName}</TableCell>
                       <TableCell className="text-sm text-muted-foreground">{order.salesExecutiveName}</TableCell>
-                      <TableCell className="text-sm text-muted-foreground">{order.products.length} items</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">{(order.products?.length || 0)} items</TableCell>
                       <TableCell className="text-sm font-semibold">₹{order.totalAmount.toLocaleString()}</TableCell>
                       <TableCell>
                         <Badge variant="outline" className={`text-[10px] rounded-full ${paymentColors[order.paymentStatus?.toLowerCase()] || paymentColors['pending']}`}>

@@ -52,8 +52,8 @@ export async function getDocuments<T>(
   const q = constraints.length > 0 ? query(ref, ...constraints) : query(ref);
   const snapshot = await getDocs(q);
   return snapshot.docs.map((doc) => ({
-    id: doc.id,
     ...doc.data(),
+    id: doc.id,
     createdAt: parseDate(doc.data().createdAt) || new Date(),
     updatedAt: parseDate(doc.data().updatedAt),
     checkIn: parseDate(doc.data().checkIn),
@@ -126,8 +126,8 @@ export function subscribeToCollection<T>(
   
   return onSnapshot(q, (snapshot) => {
     const data = snapshot.docs.map((doc) => ({
-      id: doc.id,
       ...doc.data(),
+      id: doc.id,
       createdAt: parseDate(doc.data().createdAt) || new Date(),
       updatedAt: parseDate(doc.data().updatedAt),
       checkIn: parseDate(doc.data().checkIn),

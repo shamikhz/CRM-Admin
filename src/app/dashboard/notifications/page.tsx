@@ -13,6 +13,8 @@ import {
 import { useNotificationStore } from '@/store';
 import { mockNotifications } from '@/lib/mock-data';
 import { format, formatDistanceToNow } from 'date-fns';
+import { updateDocument } from '@/firebase/firestore';
+import { toast } from 'sonner';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -32,14 +34,39 @@ const typeConfig: Record<string, { icon: React.ElementType; bg: string; color: s
 };
 
 export default function NotificationsPage() {
-  const { markAllAsRead } = useNotificationStore();
+  const { notifications, markAllAsRead, markAsRead } = useNotificationStore();
   const [filter, setFilter] = useState('all');
 
+  const handleMarkAsRead = async (id: string) => {
+    markAsRead(id);
+    try {
+      await updateDocument('notifications', id, { isRead: true });
+    } catch (error) {
+      console.error('Failed to mark as read', error);
+      toast.error('Failed to update notification');
+    }
+  };
+
+  const handleMarkAllAsRead = async () => {
+    markAllAsRead();
+    try {
+      const unreadNotifications = (notifications || []).filter(n => !n.isRead);
+      if (unreadNotifications.length === 0) return;
+      await Promise.all(
+        unreadNotifications.map(n => updateDocument('notifications', n.id, { isRead: true }))
+      );
+      toast.success('All notifications marked as read');
+    } catch (error) {
+      console.error('Failed to mark all as read', error);
+      toast.error('Failed to update notifications');
+    }
+  };
+
   const filtered = filter === 'all'
-    ? mockNotifications
+    ? (notifications || [])
     : filter === 'unread'
-    ? mockNotifications.filter(n => !n.isRead)
-    : mockNotifications.filter(n => n.type === filter);
+    ? (notifications || []).filter(n => !n.isRead)
+    : (notifications || []).filter(n => n.type === filter);
 
   return (
     <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-6">
@@ -49,7 +76,7 @@ export default function NotificationsPage() {
           <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">Notifications</h1>
           <p className="text-muted-foreground mt-1">Stay updated with alerts and notifications</p>
         </div>
-        <Button variant="outline" className="rounded-xl gap-2" onClick={markAllAsRead}>
+        <Button variant="outline" className="rounded-xl gap-2" onClick={handleMarkAllAsRead}>
           <CheckCheck className="w-4 h-4" /> Mark all as read
         </Button>
       </motion.div>
@@ -81,8 +108,10 @@ export default function NotificationsPage() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: i * 0.05 }}
             >
-              <Card className={`border-0 shadow-sm rounded-2xl overflow-hidden transition-all hover:shadow-md ${
-                !n.isRead ? 'ring-1 ring-primary/10 bg-primary/[0.02]' : ''
+              <Card 
+                onClick={() => !n.isRead && handleMarkAsRead(n.id)}
+                className={`border-0 shadow-sm rounded-2xl overflow-hidden transition-all hover:shadow-md ${
+                !n.isRead ? 'ring-1 ring-primary/10 bg-primary/[0.02] cursor-pointer' : ''
               }`}>
                 <CardContent className="p-4 flex items-start gap-4">
                   <div className={`w-10 h-10 rounded-xl ${config.bg} flex items-center justify-center shrink-0`}>
@@ -118,7 +147,7 @@ export default function NotificationsPage() {
           );
         })}
 
-        {filtered.length === 0 && (
+        {(filtered?.length || 0) === 0 && (
           <Card className="border-0 shadow-sm rounded-2xl">
             <CardContent className="p-12 text-center">
               <BellOff className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
