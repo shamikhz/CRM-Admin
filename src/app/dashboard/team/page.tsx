@@ -139,11 +139,10 @@ export default function TeamTrackingPage() {
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: i * 0.05 }}
                     onClick={() => setSelectedEmployee(isSelected ? null : loc.userId)}
-                    className={`p-3 rounded-xl cursor-pointer transition-all duration-200 ${
-                      isSelected
-                        ? 'bg-primary/10 border border-primary/20 shadow-sm'
-                        : 'hover:bg-muted/50 border border-transparent'
-                    }`}
+                    className={`p-3 rounded-xl cursor-pointer transition-all duration-200 ${isSelected
+                      ? 'bg-primary/10 border border-primary/20 shadow-sm'
+                      : 'hover:bg-muted/50 border border-transparent'
+                      }`}
                   >
                     <div className="flex items-start gap-3">
                       <div className="relative">
@@ -152,20 +151,18 @@ export default function TeamTrackingPage() {
                             {loc.userName?.split(' ').map((n: string) => n[0]).join('')}
                           </AvatarFallback>
                         </Avatar>
-                        <span className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-white ${
-                          loc.isActive ? 'bg-green-500' : 'bg-gray-400'
-                        }`} />
+                        <span className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-white ${loc.isActive ? 'bg-green-500' : 'bg-gray-400'
+                          }`} />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">
                           <p className="text-sm font-semibold truncate">{loc.userName}</p>
                           <Badge
                             variant="outline"
-                            className={`text-[10px] rounded-full px-2 ${
-                              loc.isActive
-                                ? 'border-green-200 bg-green-50 text-green-700'
-                                : 'border-gray-200 bg-gray-50 text-gray-500'
-                            }`}
+                            className={`text-[10px] rounded-full px-2 ${loc.isActive
+                              ? 'border-green-200 bg-green-50 text-green-700'
+                              : 'border-gray-200 bg-gray-50 text-gray-500'
+                              }`}
                           >
                             {loc.isActive ? 'Active' : 'Inactive'}
                           </Badge>
@@ -177,13 +174,12 @@ export default function TeamTrackingPage() {
                           <span className="text-[10px] text-muted-foreground flex items-center gap-1">
                             <Battery className="w-3 h-3" /> {loc.batteryLevel}%
                           </span>
-                          <span className={`text-[10px] flex items-center gap-1 ${
-                            loc.networkStatus === 'online' ? 'text-green-600' :
+                          <span className={`text-[10px] flex items-center gap-1 ${loc.networkStatus === 'online' ? 'text-green-600' :
                             loc.networkStatus === 'weak' ? 'text-amber-600' : 'text-red-600'
-                          }`}>
+                            }`}>
                             {loc.networkStatus === 'online' ? <Wifi className="w-3 h-3" /> :
-                             loc.networkStatus === 'weak' ? <Signal className="w-3 h-3" /> :
-                             <WifiOff className="w-3 h-3" />}
+                              loc.networkStatus === 'weak' ? <Signal className="w-3 h-3" /> :
+                                <WifiOff className="w-3 h-3" />}
                             {loc.networkStatus}
                           </span>
                           <span className="text-[10px] text-muted-foreground flex items-center gap-1">
@@ -245,7 +241,7 @@ export default function TeamTrackingPage() {
                   <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                       <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-                        <path d="M 40 0 L 0 0 0 40" fill="none" stroke="currentColor" strokeWidth="0.5"/>
+                        <path d="M 40 0 L 0 0 0 40" fill="none" stroke="currentColor" strokeWidth="0.5" />
                       </pattern>
                     </defs>
                     <rect width="100%" height="100%" fill="url(#grid)" />
@@ -279,9 +275,8 @@ export default function TeamTrackingPage() {
                       {loc.isActive && (
                         <span className="absolute inset-0 w-10 h-10 -m-1 rounded-full bg-primary/20 animate-ping" />
                       )}
-                      <div className={`relative w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-lg ${
-                        loc.isActive ? 'bg-primary' : 'bg-gray-400'
-                      } ${isSelected2 ? 'ring-4 ring-primary/30' : ''}`}>
+                      <div className={`relative w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-lg ${loc.isActive ? 'bg-primary' : 'bg-gray-400'
+                        } ${isSelected2 ? 'ring-4 ring-primary/30' : ''}`}>
                         {loc.userName?.split(' ').map((n: string) => n[0]).join('')}
                       </div>
                       {isSelected2 && (
