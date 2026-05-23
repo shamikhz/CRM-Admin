@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -12,7 +12,7 @@ import {
   MapPin, Search, Filter, Battery, Wifi, WifiOff, Signal,
   Eye, Navigation, Clock, ShoppingCart, Users as UsersIcon, Activity
 } from 'lucide-react';
-import { mockLiveLocations, mockUsers } from '@/lib/mock-data';
+import { subscribeToCollection, collections } from '@/firebase/firestore';
 import { format } from 'date-fns';
 
 const containerVariants = {
@@ -28,8 +28,27 @@ export default function TeamTrackingPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedEmployee, setSelectedEmployee] = useState<string | null>(null);
+  const [teamMembers, setTeamMembers] = useState<any[]>([]);
 
-  const filteredLocations = mockLiveLocations.filter((loc) => {
+  useEffect(() => {
+    const unsub = subscribeToCollection(collections.users, (data: any[]) => {
+      // Filter for sales-executives
+      const executives = data.filter(u => u.role === 'sales-executive');
+      setTeamMembers(executives.map(u => ({
+        id: u.id,
+        userId: u.id,
+        userName: u.name || 'Unknown Executive',
+        isActive: !!u.isActive,
+        batteryLevel: 90, // Static for now until full battery tracking is implemented
+        networkStatus: u.isActive ? 'online' : 'offline',
+        updatedAt: u.updatedAt || u.createdAt || new Date(),
+        assignedRegion: u.assignedRegion || 'Unassigned Region'
+      })));
+    });
+    return () => unsub();
+  }, []);
+
+  const filteredLocations = teamMembers.filter((loc) => {
     const matchSearch = (loc.userName || '').toLowerCase().includes(searchQuery.toLowerCase());
     const matchStatus = statusFilter === 'all' ||
       (statusFilter === 'online' && loc.isActive) ||
@@ -37,8 +56,8 @@ export default function TeamTrackingPage() {
     return matchSearch && matchStatus;
   });
 
-  const onlineCount = mockLiveLocations.filter(l => l.isActive).length;
-  const offlineCount = mockLiveLocations.filter(l => !l.isActive).length;
+  const onlineCount = teamMembers.filter(l => l.isActive).length;
+  const offlineCount = teamMembers.filter(l => !l.isActive).length;
 
   return (
     <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-6">
@@ -63,10 +82,10 @@ export default function TeamTrackingPage() {
       {/* Quick Stats */}
       <motion.div variants={itemVariants} className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
-          { label: 'Total Team', value: mockLiveLocations.length, icon: UsersIcon, color: 'text-violet-600 bg-violet-50' },
+          { label: 'Total Team', value: teamMembers.length, icon: UsersIcon, color: 'text-violet-600 bg-violet-50' },
           { label: 'Active Now', value: onlineCount, icon: Activity, color: 'text-emerald-600 bg-emerald-50' },
           { label: 'On Visit', value: 3, icon: MapPin, color: 'text-amber-600 bg-amber-50' },
-          { label: 'Avg Battery', value: `${Math.round(mockLiveLocations.reduce((a, l) => a + l.batteryLevel, 0) / mockLiveLocations.length)}%`, icon: Battery, color: 'text-blue-600 bg-blue-50' },
+          { label: 'Avg Battery', value: `${teamMembers.length ? Math.round(teamMembers.reduce((a, l) => a + l.batteryLevel, 0) / teamMembers.length) : 0}%`, icon: Battery, color: 'text-blue-600 bg-blue-50' },
         ].map((stat) => (
           <Card key={stat.label} className="border-0 shadow-sm rounded-2xl">
             <CardContent className="p-4 flex items-center gap-3">
@@ -112,7 +131,6 @@ export default function TeamTrackingPage() {
             </CardHeader>
             <CardContent className="space-y-2 pt-0 max-h-[600px] overflow-y-auto">
               {filteredLocations.map((loc, i) => {
-                const user = mockUsers.find(u => u.uid === loc.userId);
                 const isSelected = selectedEmployee === loc.userId;
                 return (
                   <motion.div
@@ -131,7 +149,7 @@ export default function TeamTrackingPage() {
                       <div className="relative">
                         <Avatar className="h-11 w-11">
                           <AvatarFallback className="bg-primary/10 text-primary text-sm font-semibold">
-                            {loc.userName?.split(' ').map(n => n[0]).join('')}
+                            {loc.userName?.split(' ').map((n: string) => n[0]).join('')}
                           </AvatarFallback>
                         </Avatar>
                         <span className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-white ${
@@ -153,7 +171,7 @@ export default function TeamTrackingPage() {
                           </Badge>
                         </div>
                         <p className="text-xs text-muted-foreground mt-0.5">
-                          {user?.assignedRegion || 'Unknown Region'}
+                          {loc.assignedRegion || 'Unknown Region'}
                         </p>
                         <div className="flex items-center gap-3 mt-2">
                           <span className="text-[10px] text-muted-foreground flex items-center gap-1">
@@ -264,7 +282,7 @@ export default function TeamTrackingPage() {
                       <div className={`relative w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-lg ${
                         loc.isActive ? 'bg-primary' : 'bg-gray-400'
                       } ${isSelected2 ? 'ring-4 ring-primary/30' : ''}`}>
-                        {loc.userName?.split(' ').map(n => n[0]).join('')}
+                        {loc.userName?.split(' ').map((n: string) => n[0]).join('')}
                       </div>
                       {isSelected2 && (
                         <motion.div
