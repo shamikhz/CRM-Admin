@@ -2,16 +2,16 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { signIn } from '@/firebase/auth';
 import { useAuthStore } from '@/store';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent } from '@/components/ui/card';
+
 import {
   Zap, Shield, BarChart3, MapPin, Eye, EyeOff, Loader2,
-  Users, TrendingUp, Globe
+  Users, Globe
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -46,6 +46,7 @@ export default function LoginPage() {
   // Demo login
   const handleDemoLogin = () => {
     setUser({
+      id: 'demo-admin',
       uid: 'demo-admin',
       name: 'Admin User',
       email: 'admin@fieldforce.io',
@@ -129,7 +130,7 @@ export default function LoginPage() {
                 <span className="text-white/90">Sales Force</span>
               </h2>
               <p className="mt-4 text-lg text-white/70 max-w-md leading-relaxed">
-                Monitor, manage, and maximize your field team's performance with
+                Monitor, manage, and maximize your field team&apos;s performance with
                 real-time analytics and intelligent automation.
               </p>
             </motion.div>

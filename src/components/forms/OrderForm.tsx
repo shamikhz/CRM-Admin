@@ -14,7 +14,7 @@ import { toast } from 'sonner';
 
 const schema = z.object({
   customerName: z.string().min(2, 'Customer name is required'),
-  totalAmount: z.coerce.number().min(1, 'Amount must be greater than 0'),
+  totalAmount: z.number().min(1, 'Amount must be greater than 0'),
   paymentStatus: z.enum(['paid', 'pending', 'partial', 'overdue'] as const),
   deliveryStatus: z.enum(['pending', 'dispatched', 'delivered', 'cancelled'] as const),
 });
@@ -78,7 +78,7 @@ export function OrderForm({ initialData, onSuccess, onCancel }: OrderFormProps) 
       
       <div className="space-y-2">
         <Label htmlFor="totalAmount">Total Amount (₹)</Label>
-        <Input id="totalAmount" type="number" {...register('totalAmount')} className="rounded-xl" />
+        <Input id="totalAmount" type="number" {...register('totalAmount', { valueAsNumber: true })} className="rounded-xl" />
         {errors.totalAmount && <p className="text-xs text-red-500">{errors.totalAmount.message}</p>}
       </div>
 

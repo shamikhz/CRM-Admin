@@ -5,14 +5,14 @@ import type {
 
 // ─── Users ──────────────────────────────────────────────────────────────
 export const mockUsers: User[] = [
-  { uid: 'u1', name: 'Rahul Sharma', email: 'rahul@fieldforce.io', role: 'sales-executive', phone: '+91 98765 43210', assignedRegion: 'North Delhi', profileImage: '', managerId: 'm1', createdAt: new Date('2024-06-15'), isActive: true },
-  { uid: 'u2', name: 'Priya Patel', email: 'priya@fieldforce.io', role: 'sales-executive', phone: '+91 98765 43211', assignedRegion: 'South Mumbai', profileImage: '', managerId: 'm1', createdAt: new Date('2024-07-20'), isActive: true },
-  { uid: 'u3', name: 'Amit Kumar', email: 'amit@fieldforce.io', role: 'sales-executive', phone: '+91 98765 43212', assignedRegion: 'East Bangalore', profileImage: '', managerId: 'm2', createdAt: new Date('2024-08-10'), isActive: true },
-  { uid: 'u4', name: 'Sneha Reddy', email: 'sneha@fieldforce.io', role: 'sales-executive', phone: '+91 98765 43213', assignedRegion: 'West Hyderabad', profileImage: '', managerId: 'm2', createdAt: new Date('2024-09-05'), isActive: false },
-  { uid: 'u5', name: 'Vikram Singh', email: 'vikram@fieldforce.io', role: 'sales-executive', phone: '+91 98765 43214', assignedRegion: 'North Delhi', profileImage: '', managerId: 'm1', createdAt: new Date('2024-10-12'), isActive: true },
-  { uid: 'u6', name: 'Ananya Das', email: 'ananya@fieldforce.io', role: 'sales-executive', phone: '+91 98765 43215', assignedRegion: 'Central Pune', profileImage: '', managerId: 'm2', createdAt: new Date('2024-11-01'), isActive: true },
-  { uid: 'm1', name: 'Rajesh Verma', email: 'rajesh@fieldforce.io', role: 'manager', phone: '+91 98765 43220', assignedRegion: 'North Zone', profileImage: '', managerId: null, createdAt: new Date('2024-01-10'), isActive: true },
-  { uid: 'm2', name: 'Kavita Nair', email: 'kavita@fieldforce.io', role: 'manager', phone: '+91 98765 43221', assignedRegion: 'South Zone', profileImage: '', managerId: null, createdAt: new Date('2024-02-15'), isActive: true },
+  { id: 'u1', uid: 'u1', name: 'Rahul Sharma', email: 'rahul@fieldforce.io', role: 'sales-executive', phone: '+91 98765 43210', assignedRegion: 'North Delhi', profileImage: '', managerId: 'm1', createdAt: new Date('2024-06-15'), isActive: true },
+  { id: 'u2', uid: 'u2', name: 'Priya Patel', email: 'priya@fieldforce.io', role: 'sales-executive', phone: '+91 98765 43211', assignedRegion: 'South Mumbai', profileImage: '', managerId: 'm1', createdAt: new Date('2024-07-20'), isActive: true },
+  { id: 'u3', uid: 'u3', name: 'Amit Kumar', email: 'amit@fieldforce.io', role: 'sales-executive', phone: '+91 98765 43212', assignedRegion: 'East Bangalore', profileImage: '', managerId: 'm2', createdAt: new Date('2024-08-10'), isActive: true },
+  { id: 'u4', uid: 'u4', name: 'Sneha Reddy', email: 'sneha@fieldforce.io', role: 'sales-executive', phone: '+91 98765 43213', assignedRegion: 'West Hyderabad', profileImage: '', managerId: 'm2', createdAt: new Date('2024-09-05'), isActive: false },
+  { id: 'u5', uid: 'u5', name: 'Vikram Singh', email: 'vikram@fieldforce.io', role: 'sales-executive', phone: '+91 98765 43214', assignedRegion: 'North Delhi', profileImage: '', managerId: 'm1', createdAt: new Date('2024-10-12'), isActive: true },
+  { id: 'u6', uid: 'u6', name: 'Ananya Das', email: 'ananya@fieldforce.io', role: 'sales-executive', phone: '+91 98765 43215', assignedRegion: 'Central Pune', profileImage: '', managerId: 'm2', createdAt: new Date('2024-11-01'), isActive: true },
+  { id: 'm1', uid: 'm1', name: 'Rajesh Verma', email: 'rajesh@fieldforce.io', role: 'manager', phone: '+91 98765 43220', assignedRegion: 'North Zone', profileImage: '', managerId: null, createdAt: new Date('2024-01-10'), isActive: true },
+  { id: 'm2', uid: 'm2', name: 'Kavita Nair', email: 'kavita@fieldforce.io', role: 'manager', phone: '+91 98765 43221', assignedRegion: 'South Zone', profileImage: '', managerId: null, createdAt: new Date('2024-02-15'), isActive: true },
 ];
 
 // ─── Attendance ─────────────────────────────────────────────────────────

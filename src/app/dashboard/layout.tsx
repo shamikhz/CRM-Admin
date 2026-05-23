@@ -59,7 +59,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       (data) => {
         setNotifications(data);
       },
-      orderBy('createdAt', 'desc')
+      [orderBy('createdAt', 'desc')]
     );
     return () => unsubscribe();
   }, [setNotifications]);
