@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { createDocument, updateDocument } from '@/firebase/firestore';
+import { createDocument, updateDocument, subscribeToCollection } from '@/firebase/firestore';
 import { Task } from '@/types';
 import { toast } from 'sonner';
 import { Textarea } from '@/components/ui/textarea';
@@ -18,6 +18,7 @@ const schema = z.object({
   description: z.string().min(5, 'Description is required'),
   priority: z.enum(['low', 'medium', 'high', 'critical'] as const),
   dueDate: z.string().min(1, 'Due date is required'),
+  assignedTo: z.string().min(1, 'Assignee is required'),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -30,7 +31,16 @@ interface TaskFormProps {
 
 export function TaskForm({ initialData, onSuccess, onCancel }: TaskFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [employees, setEmployees] = useState<any[]>([]);
   
+  useEffect(() => {
+    const unsub = subscribeToCollection<any>('users', (data) => {
+      const executives = data.filter(u => u.role === 'sales-executive');
+      setEmployees(executives);
+    });
+    return () => unsub();
+  }, []);
+
   // Format Date to YYYY-MM-DD for the input
   const defaultDueDate = initialData?.dueDate 
     ? new Date(initialData.dueDate).toISOString().split('T')[0]
@@ -43,29 +53,35 @@ export function TaskForm({ initialData, onSuccess, onCancel }: TaskFormProps) {
       description: initialData.description,
       priority: initialData.priority as any,
       dueDate: defaultDueDate,
+      assignedTo: initialData.assignedTo || 'unassigned',
     } : {
       priority: 'medium',
+      assignedTo: 'unassigned',
     }
   });
 
   const onSubmit = async (data: FormData) => {
     setIsSubmitting(true);
     try {
+      const selectedEmp = employees.find(emp => emp.id === data.assignedTo);
+      const assignedToName = selectedEmp ? (selectedEmp.name || 'Unknown Executive') : 'Unassigned';
+
+      const taskPayload = {
+        title: data.title,
+        description: data.description,
+        priority: data.priority,
+        dueDate: new Date(data.dueDate),
+        assignedTo: data.assignedTo,
+        assignedToName,
+        status: initialData?.status || 'pending',
+        createdBy: 'admin',
+      };
+
       if (initialData?.id) {
-        await updateDocument('tasks', initialData.id, {
-          ...data,
-          dueDate: new Date(data.dueDate),
-        });
+        await updateDocument('tasks', initialData.id, taskPayload);
         toast.success('Task updated successfully');
       } else {
-        await createDocument('tasks', {
-          ...data,
-          dueDate: new Date(data.dueDate), // convert string to Date for Firestore
-          assignedTo: 'unassigned',
-          assignedToName: 'Unassigned',
-          status: 'pending',
-          createdBy: 'admin',
-        });
+        await createDocument('tasks', taskPayload);
         toast.success('Task created successfully');
       }
       onSuccess?.();
@@ -112,6 +128,22 @@ export function TaskForm({ initialData, onSuccess, onCancel }: TaskFormProps) {
           <Input id="dueDate" type="date" {...register('dueDate')} className="rounded-xl" />
           {errors.dueDate && <p className="text-xs text-red-500">{errors.dueDate.message}</p>}
         </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label>Assign Employee</Label>
+        <Select onValueChange={(v: any) => setValue('assignedTo', v)} defaultValue={initialData?.assignedTo || "unassigned"}>
+          <SelectTrigger className="w-full rounded-xl">
+            <SelectValue placeholder="Select employee" />
+          </SelectTrigger>
+          <SelectContent className="rounded-xl">
+            <SelectItem value="unassigned">Unassigned</SelectItem>
+            {employees.map(emp => (
+              <SelectItem key={emp.id} value={emp.id}>{emp.name || emp.email}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {errors.assignedTo && <p className="text-xs text-red-500">{errors.assignedTo.message}</p>}
       </div>
       
       <div className="flex justify-end gap-2 pt-4">
