@@ -52,6 +52,40 @@ export default function DashboardPage() {
   const totalEmployees = users.length > 0 ? users.length : kpi.totalEmployees;
   const activeEmployees = users.length > 0 ? users.filter(u => u.isActive).length : kpi.activeEmployees;
 
+  // Filter sales performance data to show only existing employees
+  const filteredSalesPerformance = salesPerformanceData.filter(dataPoint => {
+    if (users.length === 0) return true; // Fallback to mock if database has not loaded/is empty
+    return users.some(u => u.name.toLowerCase().includes(dataPoint.name.toLowerCase()));
+  });
+
+  // Filter recent activities to show only those for existing employees
+  const existingEmployeeNames = new Set(users.map(u => u.name.toLowerCase()));
+  const filteredActivityFeed = mockActivityFeed.filter(item => {
+    if (users.length === 0) return true; // Fallback if no users loaded
+    if (item.user === 'System') return true;
+    return existingEmployeeNames.has(item.user.toLowerCase());
+  });
+
+  // Derive Live Team Status showing ONLY existing sales-executives
+  const executives = users.filter(u => u.role === 'sales-executive');
+  const liveLocations = executives.length > 0
+    ? executives.map(user => {
+        const mockLoc = mockLiveLocations.find(loc => 
+          loc.userName?.toLowerCase() === user.name.toLowerCase() || 
+          loc.userId === user.id || 
+          loc.id === user.id
+        );
+        return {
+          id: user.id,
+          userId: user.id,
+          userName: user.name,
+          isActive: !!user.isActive,
+          networkStatus: user.isActive ? 'online' as const : 'offline' as const,
+          batteryLevel: mockLoc ? mockLoc.batteryLevel : 85,
+        };
+      })
+    : mockLiveLocations;
+
   const kpiCards = [
     {
       title: 'Total Revenue',
@@ -267,7 +301,7 @@ export default function DashboardPage() {
             <CardContent>
               <div className="h-[280px]">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={salesPerformanceData} layout="vertical">
+                  <BarChart data={filteredSalesPerformance} layout="vertical">
                     <CartesianGrid strokeDasharray="3 3" className="stroke-muted/30" horizontal={false} />
                     <XAxis type="number" tick={{ fill: 'currentColor', fontSize: 12 }} tickFormatter={(v) => `${v/1000}K`} />
                     <YAxis type="category" dataKey="name" tick={{ fill: 'currentColor', fontSize: 12 }} width={60} />
@@ -328,7 +362,7 @@ export default function DashboardPage() {
               </div>
             </CardHeader>
             <CardContent className="space-y-1 pt-0">
-              {mockActivityFeed.slice(0, 6).map((item, i) => {
+              {filteredActivityFeed.slice(0, 6).map((item, i) => {
                 const Icon = activityIcons[item.type] || Activity;
                 const color = activityColors[item.type] || 'bg-gray-100 text-gray-600';
                 return (
@@ -368,36 +402,43 @@ export default function DashboardPage() {
               </div>
             </CardHeader>
             <CardContent className="space-y-3 pt-0">
-              {mockLiveLocations.map((loc) => (
-                <div key={loc.id} className="flex items-center gap-3 p-2 rounded-xl hover:bg-muted/50 transition-colors">
-                  <div className="relative">
-                    <Avatar className="h-10 w-10">
-                      <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
-                        {loc.userName?.split(' ').map(n => n[0]).join('')}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white ${loc.isActive ? 'bg-green-500' : 'bg-gray-400'}`} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{loc.userName}</p>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${
-                        loc.networkStatus === 'online' ? 'bg-green-100 text-green-700' :
-                        loc.networkStatus === 'weak' ? 'bg-amber-100 text-amber-700' :
-                        'bg-red-100 text-red-700'
-                      }`}>
-                        {loc.networkStatus}
-                      </span>
-                      <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
-                        🔋 {loc.batteryLevel}%
-                      </span>
-                    </div>
-                  </div>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg shrink-0">
-                    <Eye className="w-3.5 h-3.5" />
-                  </Button>
+              {liveLocations.length === 0 ? (
+                <div className="py-8 flex flex-col items-center justify-center text-muted-foreground text-center">
+                  <Users className="w-8 h-8 mb-2 text-muted-foreground/40" />
+                  <p className="text-xs">No active sales executives</p>
                 </div>
-              ))}
+              ) : (
+                liveLocations.map((loc) => (
+                  <div key={loc.id} className="flex items-center gap-3 p-2 rounded-xl hover:bg-muted/50 transition-colors">
+                    <div className="relative">
+                      <Avatar className="h-10 w-10">
+                        <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
+                          {loc.userName?.split(' ').map(n => n[0]).join('')}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white ${loc.isActive ? 'bg-green-500' : 'bg-gray-400'}`} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{loc.userName}</p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${
+                          loc.networkStatus === 'online' ? 'bg-green-100 text-green-700' :
+                          loc.networkStatus === 'weak' ? 'bg-amber-100 text-amber-700' :
+                          'bg-red-100 text-red-700'
+                        }`}>
+                          {loc.networkStatus}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+                          🔋 {loc.batteryLevel}%
+                        </span>
+                      </div>
+                    </div>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg shrink-0">
+                      <Eye className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
+                ))
+              )}
             </CardContent>
           </Card>
         </motion.div>
